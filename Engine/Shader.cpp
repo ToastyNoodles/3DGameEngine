@@ -1,0 +1,90 @@
+#include "Shader.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+
+std::string LoadShaderFile(const char* shaderFile)
+{
+    std::string content;
+    std::ifstream fileStream(shaderFile, std::ios::in);
+
+    if (!fileStream.is_open()) {
+        std::cerr << "Could not read file " << shaderFile << ". File does not exist." << std::endl;
+        return "";
+    }
+
+    std::string line = "";
+    while (!fileStream.eof()) {
+        std::getline(fileStream, line);
+        content.append(line + "\n");
+    }
+
+    fileStream.close();
+	return content;
+}
+
+Shader::Shader(const char* vertexFilepath, const char* fragmentFilepath)
+{
+	int  success;
+	char infoLog[512];
+
+	std::string vertexShaderSource = LoadShaderFile(vertexFilepath);
+	std::string fragmentShaderSource = LoadShaderFile(fragmentFilepath);
+
+	const char* vertexSource = vertexShaderSource.c_str();
+	const char* fragmentSource = fragmentShaderSource.c_str();
+
+	uint32_t vertexShader;
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexSource, NULL);
+	glCompileShader(vertexShader);
+
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+		std::cout << "[Vertex Shader Error] Failed to compile shader.\n" << infoLog << std::endl;
+	}
+
+	unsigned int fragmentShader;
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+	glCompileShader(fragmentShader);
+
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+		std::cout << "[Fragment Shader Error] Failed to compile shader.\n" << infoLog << std::endl;
+	}
+
+	shader = glCreateProgram();
+	glAttachShader(shader, vertexShader);
+	glAttachShader(shader, fragmentShader);
+	glLinkProgram(shader);
+
+	glGetProgramiv(shader, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(shader, 512, NULL, infoLog);
+		std::cout << "[Shader Link Error] Failed to link shaders to shader program.\n" << infoLog << std::endl;
+	}
+
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+}
+
+void Shader::LinkAttrib(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* pointer)
+{
+	glVertexAttribPointer(index, size, type, normalized, stride, pointer);
+	glEnableVertexAttribArray(index);
+}
+
+void Shader::ShaderBind()
+{
+	glUseProgram(shader);
+}
+
+void Shader::ShaderUnbind()
+{
+	glUseProgram(0);
+}
