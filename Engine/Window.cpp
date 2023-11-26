@@ -19,5 +19,14 @@ GLFWwindow* Window::WindowInit(uint32_t width, uint32_t height, const char* titl
 
 	glfwSetFramebufferSizeCallback(window, FrameBufferCallback);
 
+	glEnable(GL_DEPTH_TEST);
+
 	return window;
+}
+
+glm::vec2 Window::GetWindowSize(GLFWwindow* window)
+{
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+	return glm::vec2(width, height);
 }

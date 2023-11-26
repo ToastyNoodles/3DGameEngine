@@ -9,7 +9,7 @@ std::string LoadShaderFile(const char* shaderFile)
     std::ifstream fileStream(shaderFile, std::ios::in);
 
     if (!fileStream.is_open()) {
-        std::cerr << "Could not read file " << shaderFile << ". File does not exist." << std::endl;
+        std::cerr << "Could not read file " << shaderFile << "." << std::endl;
         return "";
     }
 
@@ -29,9 +29,9 @@ Shader::Shader(const char* vertexFilepath, const char* fragmentFilepath)
 	char infoLog[512];
 
 	std::string vertexShaderSource = LoadShaderFile(vertexFilepath);
-	std::string fragmentShaderSource = LoadShaderFile(fragmentFilepath);
-
 	const char* vertexSource = vertexShaderSource.c_str();
+
+	std::string fragmentShaderSource = LoadShaderFile(fragmentFilepath);
 	const char* fragmentSource = fragmentShaderSource.c_str();
 
 	uint32_t vertexShader;
@@ -43,7 +43,7 @@ Shader::Shader(const char* vertexFilepath, const char* fragmentFilepath)
 	if (!success)
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "[Vertex Shader Error] Failed to compile shader.\n" << infoLog << std::endl;
+		std::cout << "Vertex shader failed to compile shader.\n" << infoLog << std::endl;
 	}
 
 	unsigned int fragmentShader;
@@ -55,7 +55,7 @@ Shader::Shader(const char* vertexFilepath, const char* fragmentFilepath)
 	if (!success)
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "[Fragment Shader Error] Failed to compile shader.\n" << infoLog << std::endl;
+		std::cout << "Fragment shader failed to compile shader.\n" << infoLog << std::endl;
 	}
 
 	shader = glCreateProgram();
@@ -66,7 +66,7 @@ Shader::Shader(const char* vertexFilepath, const char* fragmentFilepath)
 	glGetProgramiv(shader, GL_LINK_STATUS, &success);
 	if (!success) {
 		glGetProgramInfoLog(shader, 512, NULL, infoLog);
-		std::cout << "[Shader Link Error] Failed to link shaders to shader program.\n" << infoLog << std::endl;
+		std::cout << "Failed to link shaders to shader program.\n" << infoLog << std::endl;
 	}
 
 	glDeleteShader(vertexShader);
@@ -87,4 +87,9 @@ void Shader::ShaderBind()
 void Shader::ShaderUnbind()
 {
 	glUseProgram(0);
+}
+
+void Shader::SetMat4(const char* name, glm::mat4 value)
+{
+	glUniformMatrix4fv(glGetUniformLocation(shader, name), 1, GL_FALSE, glm::value_ptr(value));
 }
